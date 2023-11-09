@@ -1,0 +1,117 @@
+openapi: 3.0.0
+info:
+  title: FarmCollector API
+  description: APIs for collecting farming data and generating reports
+  version: 1.0.0
+
+components:
+  schemas:
+    PlantedData:
+      type: object
+      properties:
+        farm_name:
+          type: string
+        planting_area_acres:
+          type: integer
+          minimum: 1
+        crop_type:
+          type: string
+        expected_product_tons:
+          type: integer
+          minimum: 0
+
+    HarvestedData:
+      type: object
+      properties:
+        farm_name:
+          type: string
+        crop_type:
+          type: string
+        actual_product_tons:
+          type: integer
+          minimum: 0
+          default: 0
+
+paths:
+  /planted:
+    post:
+      summary: Submit Planted Data
+      description: Submit data for planting activities.
+      operationId: postPlantedData
+      parameters:
+        - in: header
+          name: season
+          schema:
+            type: string
+            enum: [ spring, summer, fall, winter ]
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/PlantedData"
+      responses:
+        '201':
+          description: Data successfully submitted.
+
+  /harvested:
+    post:
+      summary: Submit Harvested Data
+      description: Submit data for harvested activities.
+      operationId: postHarvestedData
+      parameters:
+        - in: header
+          name: season
+          schema:
+            type: string
+            enum: [ spring, summer, fall, winter ]
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/HarvestedData"
+      responses:
+        '201':
+          description: Data successfully submitted.
+
+  /reports:
+    get:
+      summary: Get Reports
+      description: Retrieve expected vs. actual product reports.
+      operationId: getReport
+      parameters:
+        - name: season
+          in: query
+          description: The season for which to generate the report.
+          required: true
+          schema:
+            type: string
+            enum: [ spring, summer, fall, winter ]
+        - name: forEachType
+          in: query
+          description: Filter by type.
+          required: true
+          schema:
+            type: string
+            enum: [ farmer, crop ]
+      responses:
+        '200':
+          description: Successfully retrieved the report.
+          content:
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Wrong input for report.
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Error to retrieve report from database
+          content:
+            application/json:
+              schema:
+                type: string
+
